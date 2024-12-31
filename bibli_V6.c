@@ -560,7 +560,7 @@ void ModifierDoc()
     scanf("%s", id);
 
     id_indice = -1; 
-    for (int i = 0; i < nbdoc; i++) 
+    for ( i = 0; i < nbdoc; i++) 
 	{
 		if (strcmp(tabdoc[i].id_doc, id)==0) 
 		{
