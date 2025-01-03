@@ -23,6 +23,8 @@
 #define TAILLE_ELEMENTRECH 200
 #define NON_TROUVE 0
 #define TROUVE 1
+#define NON_EMPRUNTE -1
+#define EMPRUNTE 1
 
 //••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
 //              ---- déclaration de types globaux ----
@@ -48,6 +50,7 @@ struct document
     char ISBN13[TAILLE_ISBN13]; //L'ISBN10 est exprimable au format ISBN13 en rajoutant 978 au début et en recalculant le chiffre de contrôle
     float prix_doc; 
     int eligible_a_lemprunt_doc ; //bool
+    int est_emprunte ; //bool
     int eligible_a_consult; //bool
     int presence_rayons; //bool
     int existe; //bool
@@ -73,6 +76,7 @@ void saisir_new();
 void affichage_liste_doc();
 void affichage_1_doc();
 void ModifierDoc();
+void SupprDoc();
 void RechercheApproximative(char *ElementRech, struct document *doc);
 void chargement();
 void verif_sauvegarde();
@@ -123,10 +127,13 @@ void menu_staff()
     printf("|   -4- Sauvegarde                    |\n");
     printf("|   -5- Chargement                    |\n");
     printf("|   -6- Rechercher un document        |\n");
-    printf("|   -7- Tri par titre                 |\n");
-    printf("|   -8- Modifier un document          |\n");
+    printf("|   -7- Modifier un document          |\n");
+    printf("|   -8- Archiver un document          |\n");
     printf("|   -9- Supprimer un document         |\n");
-    printf("|  -10- Archiver un document          |\n");
+    printf("|  -10- Emprunt d'un dcoument         |\n");
+    printf("|  -11- Retour d'un document          |\n"); 
+    printf("|  -12- Suivi des emprunts            |\n"); 
+    printf("|  -13- Statistiques                  |\n"); 
    /*
     printf("|   -10- tri par age                   |\n");  */
     printf("|                                     |\n");
@@ -156,17 +163,23 @@ void menu_staff()
       case 6 : RechercheApproximative (ElementRech,tabdoc);
                break                                      ;
       
-      case 7 : wip()                   ;
+      case 7 : ModifierDoc()           ;
                break                   ;
       
-      case 8 : ModifierDoc()           ;
+      case 8 : wip()                   ;
                break                   ;
       
-      case 9 : wip()                   ;
+      case 9 : SupprDoc()              ;
                break                   ; 
     
       case 10 : wip()                  ;
                 break                  ; 
+      case 11 : wip()                  ; 
+                break                  ; 
+      case 12 : wip()                  ; 
+                break                  ; 
+      case 13 : wip()                  ; 
+                break                  ;
       /*case 7 : modification()   ;
                break            ;
       case 8 : suppression()    ;
@@ -560,7 +573,7 @@ void ModifierDoc()
     scanf("%s", id);
 
     id_indice = -1; 
-    for ( i = 0; i < nbdoc; i++) 
+    for (i = 0; i < nbdoc; i++) 
 	{
 		if (strcmp(tabdoc[i].id_doc, id)==0) 
 		{
@@ -581,14 +594,14 @@ void ModifierDoc()
         	printf("-1- Le titre\n"); 
         	printf("-2- L'auteur\n"); 
         	printf("-3- Le prix\n"); 
-            printf("-4- La cote\n"); 
-            printf("-5- La catégorie\n"); 
-            printf("-6- Le format\n"); 
-            printf("-7- L'édition\n"); 
-            printf("-8- La collection\n"); 
-            printf("-9- L'éligibilité à l'emprunt\n"); 
-            printf("-10- L'éligibilité à la consultation\n");
-            printf("-11- La présence en rayon\n");
+                printf("-4- La cote\n"); 
+                printf("-5- La catégorie\n"); 
+                printf("-6- Le format\n"); 
+                printf("-7- L'édition\n"); 
+                printf("-8- La collection\n"); 
+                printf("-9- L'éligibilité à l'emprunt\n"); 
+                printf("-10- L'éligibilité à la consultation\n");
+                printf("-11- La présence en rayon\n");
         	printf("           \n");
         	printf("-0- Quitter la modification\n"); 
         	printf("Votre choix : "); 
@@ -717,6 +730,73 @@ void ModifierDoc()
     }
 }
 
+// ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+//           ---- Procédure de suppression d'un document ----
+// ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+/*Cas d'extrême néecessité, si un doc est obsolète, un erreur s'est produite, ou un doc devient illégal.. A utiliser avec précaution*/
+void SupprDoc()
+{
+	int id_indice_suppr, i ; 
+	char id[TAILLE_ID], confirmation[20]; 
+	
+	printf("-------------------------------------------AVERTISSEMENT--------------------------------------------------\n");
+	printf("ATTENTION, vous êtes dans le module suppression. Cette action est très rare et irréversible\n");
+	printf("Elle entraînera la perte définitive du document et de toutes les informations associées\n");
+	printf("Si vous n'êtes pas certain de cette action, privilégiez le module d'archivage. Voulez-vous continuer ? (o/n) : ");
+	scanf("%s",confirmation); 
+	conv_maj(confirmation);
+	if(confirmation[0] == 'O')
+	{
+	  printf("\nSaisissez l'ID du document à rechercher : ");
+          scanf("%s", id);
+
+         id_indice_suppr = -1; 
+          for (i = 0; i < nbdoc; i++) 
+	  {
+		if (strcmp(tabdoc[i].id_doc, id)==0) 
+		{
+                  id_indice_suppr = i;
+                }
+	  }
+
+	if (id_indice_suppr != -1) 
+	{
+		if (tabdoc[id_indice_suppr].est_emprunte==EMPRUNTE)
+		{
+			
+	           printf("Suppression impossible : le document %s de %s est emprunté\n",tabdoc[id_indice_suppr].titre_doc, tabdoc[id_indice_suppr].auteur_doc);
+		}
+		else 
+		{
+		    printf("-------------------------------------------AVERTISSEMENT---------------------------------------------\n");
+		    printf("ATTENTION, Cette action sera irréversible. Etes vous sûr de vouloir supprimer le document ? : (o/n)"); 
+		    scanf("%s",confirmation);
+		     conv_maj(confirmation); 
+		        if(confirmation[0] == 'O')
+			{
+			   for (i=id_indice_suppr ; i<nbdoc -1 ; i++)
+			   {
+			     tabdoc[i]=tabdoc[i+1]; 
+			   }
+			   nbdoc -- ; // On met à jour le nb de documents
+			   printf("Le document avec l'ID %s a été supprimé avec succès\n", id);
+			}
+			else
+			{
+			   printf("Suppression annulée\n"); 
+			}	
+		}
+    }
+    else 
+    {
+       printf("Suppression impossible : aucun document trouvé avec l'ID %s.\n", id);
+    }
+   }
+     else 
+     {
+	printf("suppression annulée, aucun document n'a été supprimé'\n"); 
+     }	
+}
 
 // ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
 //           ---- Procédure de recherche approximative ----
@@ -784,7 +864,7 @@ void RechercheApproximative(char *ElementRech, struct document *doc)
           if ((strstr(titre_maj, ElementRech) != NULL ) || (strstr(auteur_maj, ElementRech) != NULL))
           {
             correspondance = 1;
-		    printf("Document trouvé : [ID : %s], Côte : %s\n, Titre : %s\n, Auteur : ",doc[i].id_doc, doc[i].cote_doc, doc[i].titre_doc, doc[i].auteur_doc;
+		    printf("Document trouvé : [ID : %s], Côte : %s\n, Titre : %s\n, Auteur : ",doc[i].id_doc, doc[i].cote_doc, doc[i].titre_doc, doc[i].auteur_doc);
           }
       }
 	}
