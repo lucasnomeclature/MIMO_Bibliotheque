@@ -208,34 +208,35 @@ void menu_staff()
 
   while (choix_menu != 0)
   {
-    printf("✧--------MENU-------------------------✧\n");
-    printf("|   -1- Saisir un nouveau document    |\n");
-    printf("|   -2- Afficher tous les documents   |\n");
-    printf("|   -3- Afficher un document          |\n");
-    printf("|   -4- Rechercher un document        |\n");
-    printf("|   -5- Modifier un document          |\n");
-    printf("|   -6- Sortir un document du fond    |\n");
-    printf("|   -7- Supprimer un document         |\n");
-    printf("|                                     |\n");
-    printf("|   -8- Saisir abonné                 |\n");
-    printf("|   -9- Afficher les abonnés          |\n");
-    printf("|  -10- Afficher un abonné            |\n");
-    printf("|  -11- Modifier un abonné            |\n");
-    printf("|                                     |\n"); 
-    printf("|  -12- Sauvegarder                   |\n");
-    printf("|  -13- Charger un fichier            |\n");
-    printf("|                                     |\n");
-    printf("|  -14- Emprunt d'un document         |\n");
-    printf("|  -15- Retour d'un document          |\n"); 
-    printf("|  -16- Suivi des emprunts            |\n"); 
-    printf("|                                     |\n"); 
-    printf("|  -17- Statistiques                  |\n");
+    printf("✧--------MENU----------------------------✧\n");
+    printf("|   -1- Saisir un nouveau document       |\n");
+    printf("|   -2- Afficher tous les documents      |\n");
+    printf("|   -3- Afficher un document             |\n");
+    printf("|   -4- Rechercher un document           |\n");
+    printf("|   -5- Modifier un document             |\n");
+    printf("|   -6- Sortir un document du fond       |\n");
+    printf("|   -7- Supprimer un document            |\n");
+    printf("|                                        |\n");
+    printf("|   -8- Saisir abonné                    |\n");
+    printf("|   -9- Afficher les abonnés             |\n");
+    printf("|  -10- Afficher un abonné               |\n");
+    printf("|  -11- Modifier un abonné               |\n");
+    printf("|                                        |\n"); 
+    printf("|  -12- Sauvegarder                      |\n");
+    printf("|  -13- Charger un fichier               |\n");
+    printf("|                                        |\n");
+    printf("|  -14- Emprunt d'un document            |\n");
+    printf("|  -15- Retour d'un document             |\n"); 
+    printf("|  -16- Suivi des emprunts               |\n");
+    printf("|  -17- Historique emprunt d'un usager   |\n"); 
+    printf("|                                        |\n"); 
+    printf("|  -18- Statistiques                     |\n");
 	 
    /*
     printf("|   -10- tri par age                   |\n");  */
-    printf("|                                     |\n");
-    printf("|   -0- Quitter                       |\n");
-    printf("✧-------------------------------------✧\n");
+    printf("|                                        |\n");
+    printf("|   -0- Quitter                          |\n");
+    printf("✧----------------------------------------✧\n");
     printf("Choix : ");
 
     scanf("%d",&choix_menu);
@@ -287,7 +288,10 @@ void menu_staff()
                 break                                     ;
       case 16 : afficher_liste_emprunt()                  ;                                     
                 break                                     ;
-      case 17 : statistiques ()                           ;
+      case 17 : afficher_emprunts_dun_usager()            ;
+                break                                     ;
+      
+      case 18 : statistiques ()                          ;
                 break                                     ;
       /*case 7 : modification()   ;
                break            ;
@@ -312,10 +316,10 @@ void saisir_nouveau_doc()
 {
   // variables
   struct document doc;
-  int i, c;
+  int i, c, j;
   i=nbdoc;
-  char reponse[TAILLE_STANDARD], saisie[TAILLE_STANDARD], identifiant[TAILLE_ID];
-  int result, valide = 0, staff_souhaite_saisir_doc=1;
+  char reponse[TAILLE_STANDARD], saisie[TAILLE_STANDARD], identifiant[TAILLE_ID], chaine_id_temporaire[TAILLE_ID];
+  int result, valide = 0, staff_souhaite_saisir_doc=1, entier_id_temporaire, dernier_id_numerique;
 
   while ((staff_souhaite_saisir_doc!=0) && (i<MAX_DOC))
   {
@@ -331,8 +335,35 @@ void saisir_nouveau_doc()
 
     if (staff_souhaite_saisir_doc!=0)
     {
-      strcpy(doc.id, "DOC"); //L'identifiant prend le préfixe DOC afin de le différencier des identifiants des usagers notamment
-      strcat(doc.id,(mon_itoa(++nbdoc))); //Au préfixe DOC s'ajoute le nombre de document existants +1 
+      if (nbdoc==0)
+      {
+        strcpy(doc.id,"DOC1");
+      }
+      else
+      {
+        strncpy(chaine_id_temporaire, tabdoc[nbdoc - 1].id + 3, sizeof(chaine_id_temporaire) - 1); //on extrait la partie numérique de l'id du dernier doc
+        chaine_id_temporaire[sizeof(chaine_id_temporaire) - 1] = '\0'; //on sécurise la fin de chaîne
+
+        dernier_id_numerique = atoi(chaine_id_temporaire); // on convertit la partie numérique en entier
+        dernier_id_numerique++; 
+
+        strcpy(doc.id, "DOC"); // On ajouter le préfixe pour différencier des autres types
+        strcat(doc.id, mon_itoa(dernier_id_numerique)); 
+        
+        /*strcpy(chaine_id_temporaire,"");
+        printf("nbdoc:%d\n", nbdoc);
+        for (j=3; j<10 ; j++)
+        {
+          strcat(chaine_id_temporaire,&tabdoc[nbdoc-1].id[j]);
+          printf("le caractère n° %d : %c \n", j, tabdoc[nbdoc-1].id[j]);
+        }
+        entier_id_temporaire=atoi(chaine_id_temporaire);
+        printf("chaine temporaire %s\n", chaine_id_temporaire);
+        strcpy(doc.id, "DOC");
+        strcat(doc.id,(mon_itoa(entier_id_temporaire++))); */
+      }
+      //strcpy(doc.id, "DOC"); //L'identifiant prend le préfixe DOC afin de le différencier des identifiants des usagers notamment
+      //strcat(doc.id,(mon_itoa(++nbdoc))); //Au préfixe DOC s'ajoute le nombre de document existants +1 
       printf("Identifiant                                                : "); 
       printf("%s\n", doc.id);
     
@@ -511,11 +542,12 @@ void saisir_nouveau_doc()
       doc.date_fin.annee=0; //on initie une date de fin fausse pour ensuite pouvoir utiliser une condition et afficher NULL
 
       tabdoc[i++] = doc ;
+      nbdoc++;
       a_sauvegarder=1 ; // Suite à l'ajout d'un doc cela signifie qu'il y a des données à sauvegarder
     }
   }
   fflush(stdin);
-  nbdoc = i; 
+  //nbdoc = i; 
 }
 
 
@@ -2193,7 +2225,91 @@ void statistiques () //à compléter
 // ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
 void afficher_emprunts_dun_usager()
 {
-  wip();
+  char id_abo_saisi[TAILLE_ID], message_si_pas_encore_retourne[TAILLE_STANDARD];
+  strcpy(message_si_pas_encore_retourne, "NON RENDU");
+  int case_abo, au_moins_un_emp=0;
+  int i, j;
+
+  if ((nbdoc==0)&&(nbabo==0))
+  {
+    printf("Il n'y a ni document, ni abonnés renseignés.\n");
+  }
+  else if (nbdoc==0)
+  {
+    printf("Il n'y a aucun document renseigné.\n");
+  }
+  else if (nbabo==0)
+  {
+    printf("Il n'y a aucun usager renseigné.\n");
+  }
+  else
+  {
+    printf("Saisisez l'id de l'abonné associé à l'emprunt   : ");
+    fflush(stdin);
+    lire_chaine_augmentee(id_abo_saisi);
+    conv_maj_accents(id_abo_saisi, 0);
+
+    case_abo=-1;
+    while ( (i<nbabo) && (case_abo==-1) )
+    {
+      if (strcmp(tababo[i].id_abonne, id_abo_saisi)==0) 
+	    {
+        case_abo = i;
+      }
+      else
+      {
+        i++;
+      }
+    }
+    if (case_abo!=-1) // si l'abonné existe, on affiche ses emprunts du plus récent au plus ancien
+    {
+      if (nbemp==0)
+      {
+        printf("Il n'y a aucun emprunt renseigné dans le système.\n");
+      }
+      else
+      {
+        for (j=nbemp-1 ; j>=0 ; j-- )
+        {
+          if (strcmp(tabemp[j].emp_id_abo, id_abo_saisi)==0)
+          {
+            au_moins_un_emp++;
+            if (au_moins_un_emp==1) // Si il y a au moins 1 emprunt, avant l'affichage de cet emprunt on affiche les titres des colonnes
+            {
+              printf("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+              printf("%-12s %-12s %-51s %-18s %-18s %-18s %-8s\n","ID EMPRUNT","ID DOCUMENT", "TITRE DOCUMENT", "DATE D'EMPRUNT", "DATE LIMITE RETOUR", "DATE DE RETOUR", "RETARD");
+              printf("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+            } 
+            if (au_moins_un_emp>1)
+            {
+              if (tabemp[j].date_retour_effective.jour!=-1) //affichage si le doc a été rendu
+              {
+               printf("%-12s %-12s %-51s %02d/%02d/%-12d %02d/%02d/%-12d %02d/%02d/%-12d %-8s \n",tabemp[j].id, tabemp[j].emp_id_doc, tabemp[j].titre_doc_emprunte, tabemp[j].date_emprunt.jour, tabemp[j].date_emprunt.mois, tabemp[j].date_emprunt.annee, tabemp[j].date_retour_prevue.jour, tabemp[j].date_retour_prevue.mois, tabemp[j].date_retour_prevue.annee, tabemp[j].date_retour_effective.jour, tabemp[j].date_retour_effective.mois, tabemp[j].date_retour_effective.annee, int_a_reponse_question_fermee(tabemp[j].est_en_retard)); 
+              }
+              else //affichage si le doc n'a pas été rendu
+              {
+                printf("%-12s %-12s %-51s %02d/%02d/%-12d %02d/%02d/%-12d %-18s %-8s \n",tabemp[j].id, tabemp[j].emp_id_doc,tabemp[j].titre_doc_emprunte, tabemp[j].date_emprunt.jour, tabemp[j].date_emprunt.mois, tabemp[j].date_emprunt.annee, tabemp[j].date_retour_prevue.jour, tabemp[j].date_retour_prevue.mois, tabemp[j].date_retour_prevue.annee, message_si_pas_encore_retourne, int_a_reponse_question_fermee(tabemp[j].est_en_retard)); 
+              }
+            }
+          }
+        }
+      }
+      if (!au_moins_un_emp)
+      {
+        printf("Cet usager n'a aucun emprunt renseigné dans le système.\n");
+      }
+      else //on affiche le trait de séparation de fin 
+      {
+        printf("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+      }
+    }
+    else
+    {
+      printf("Cet usager n'est pas renseigné dans le système.\n");
+    }
+  }
+    
+
 }
 
 // ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
