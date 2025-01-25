@@ -1,0 +1,15 @@
+EMP1 ABO5 DOC10 3/8/2024 17/8/2024 -1/-1/-1 1 Véron-Charles Dominique Le_crime_de_l'orient_Express
+EMP2 ABO2 DOC11 25/1/2025 8/2/2025 -1/-1/-1 0 Mendez_Rizo Teresa Le_crime_de_l'orient_Express
+EMP3 ABO2 DOC12 25/1/2025 8/2/2025 -1/-1/-1 0 Mendez_Rizo Teresa Le_Petit_Prince
+EMP4 ABO2 DOC13 25/1/2025 8/2/2025 -1/-1/-1 0 Mendez_Rizo Teresa Le_Petit_Prince
+EMP5 ABO2 DOC14 25/1/2025 8/2/2025 -1/-1/-1 0 Mendez_Rizo Teresa Le_Petit_Prince
+EMP6 ABO2 DOC15 25/1/2025 8/2/2025 -1/-1/-1 0 Mendez_Rizo Teresa Dune
+EMP7 ABO4 DOC1 25/1/2025 8/2/2025 -1/-1/-1 0 Villanueva Maria-Sabrina Les_Misérables
+EMP8 ABO4 DOC19 25/1/2025 8/2/2025 -1/-1/-1 0 Villanueva Maria-Sabrina Le_Hobbit
+EMP9 ABO4 DOC16 25/1/2025 8/2/2025 -1/-1/-1 0 Villanueva Maria-Sabrina Dune
+EMP10 ABO4 DOC2 25/1/2025 8/2/2025 -1/-1/-1 0 Villanueva Maria-Sabrina Les_Misérables
+EMP11 ABO4 DOC9 25/1/2025 8/2/2025 -1/-1/-1 0 Villanueva Maria-Sabrina Sherlock_Holmes_La_vallée_de_la_peur
+EMP12 ABO9 DOC3 25/11/2024 9/12/2024 -1/-1/-1 1 Ly Nadine Les_Misérables
+EMP13 ABO3 DOC7 25/1/2025 8/2/2025 25/1/2025 0 Guillot Jacques Le_Rouge_et_le_Noir
+EMP14 ABO10 DOC7 25/1/2025 8/2/2025 25/1/2025 0 Clover Vitorio Le_Rouge_et_le_Noir
+EMP15 ABO1 DOC7 25/1/2025 8/2/2025 25/1/2025 0 Letranchant Véronique Le_Rouge_et_le_Noir
