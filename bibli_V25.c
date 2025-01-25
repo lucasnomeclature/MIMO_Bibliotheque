@@ -21,7 +21,8 @@
 #define TAILLE_ISBN13 18 //13 chiffres, 4 tirets, 1 caractère fin de ligne
 #define MAX_DOC 100
 #define MAX_ABO 500
-#define MAX_EMPRUNTS 5
+#define MAX_EMPRUNTS_TABLEAU 10000
+#define MAX_EMPRUNTS_PAR_ABO 5
 #define TAILLE_NOM_F 100
 #define TAILLE_ID 10
 #define TAILLE_STANDARD 20
@@ -35,7 +36,7 @@
 #define TAILLE_VILLE 150
 #define TAILLE_NOM 50
 #define TAILLE_PRENOM 50
-#define TAILLE_EMAIL 50
+#define TAILLE_EMAIL 35
 #define DUREE_EMPRUNT 14
 
 
@@ -80,7 +81,6 @@ struct abonne
 	char prenom[TAILLE_PRENOM]; 
 	int num_tel;
 	struct date date_naissance;
-  struct date date_actuelle;  // Pour le calcul de renouvellement d'abonnement
   struct date date_expiration; // Pour le calcul de renouvellement d'un abonnement  
 	char email[TAILLE_EMAIL];
 	struct adresse adresse_postale; 
@@ -120,7 +120,7 @@ struct document
 //••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
 struct document tabdoc[MAX_DOC] ;
 struct abonne tababo[MAX_ABO];
-struct emprunt tabemp[MAX_EMPRUNTS];
+struct emprunt tabemp[MAX_EMPRUNTS_TABLEAU];
 int nbdoc=0;
 int nbabo=0; 
 int nbemp=0; //nombre total d'emprunts
@@ -140,7 +140,7 @@ void affichage_liste_doc();
 void affichage_1_doc(int indice_a_afficher);
 void affichage_1_abo(int indice_abo);
 void ModifierDoc();
-void affichage_abonne();
+void affichage_all_abonne();
 void ModifierAbo(); 
 void SupprDoc();
 void RechercheApproximative(char *ElementRech, struct document *doc);
@@ -156,7 +156,7 @@ void retour_emprunt();
 void statistiques ();
 void afficher_emprunts_dun_usager();
 void afficher_emprunts_dun_doc();
-void historique_emprunt();
+void historique_emprunt_doc();
 void sorti_du_fond();
 
 
@@ -297,7 +297,7 @@ void menu_staff()
         case 8 : saisir_abonne()                              ;  
                break                                          ;
       
-        case 9 : affichage_abonne()                           ;  
+        case 9 : affichage_all_abonne()                           ;  
                break                                          ; 
     
         case 10 : affichage_1_abo(nbabo)          ;   
@@ -327,7 +327,7 @@ void menu_staff()
         case 18 : afficher_liste_emprunt()                    ;                                     
                 break                                         ;
 
-        case 19 : historique_emprunt()                        ;                                     
+        case 19 : historique_emprunt_doc()                        ;                                     
                 break                                         ;
 
         case 20 : afficher_emprunts_dun_usager()              ;
@@ -778,7 +778,7 @@ void saisir_abonne()
 
 
       tababo[i++] = abo ;
-      a_sauvegarder=1 ; // Suite à l'ajout d'un doc cela signifie qu'il y a des données à sauvegarder
+      a_sauvegarder=1 ; // Suite à l'ajout d'un abo cela signifie qu'il y a des données à sauvegarder
     printf("Abonné %s %s ajouté avec succès !\n", abo.prenom, abo.nom); // Je confirme car pour l'instant on a pas l'affichage à voir si on garde
     }
   }
@@ -802,9 +802,9 @@ void affichage_liste_doc()
   }
   else
   {
-    printf("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
-    printf("%-21s %-21s %-51s %-51s %-21s\n","ID","COTE","TITRE", "AUTEUR", "ISBN13");
-    printf("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+    printf("---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+    printf("%-21s %-21s %-51s %-51s %-21s %-16s %-21s\n","ID","COTE","TITRE", "AUTEUR", "ISBN13", "EMPRUNTÉ", "PRESENCE DS LE FOND");
+    printf("----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
     for (i=0 ; i < nbdoc ; i++)
     {
       doc = tabdoc[i];
@@ -813,8 +813,8 @@ void affichage_liste_doc()
       conv_maj_accents(doc.titre, 0); 
       conv_maj_accents(doc.auteur, 0); 
 
-      printf("%-21s %-21s %-51s %-51s %-21s \n",doc.id, doc.cote, doc.titre, doc.auteur, doc.ISBN13  ); 
-      printf("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+      printf("%-21s %-21s %-51s %-51s %-21s %-16s %-21s\n",doc.id, doc.cote, doc.titre, doc.auteur, doc.ISBN13, int_a_reponse_question_fermee(doc.est_emprunte), int_a_reponse_question_fermee(doc.present_dans_le_fond)  ); 
+      printf("----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
     }
   } 
 }
@@ -822,7 +822,7 @@ void affichage_liste_doc()
 // ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
 //             ---- Procédure d'affichage de tous les documents ----
 // ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
-void affichage_abonne()
+void affichage_all_abonne()
 {
     struct abonne abo;
     int i;
@@ -834,9 +834,9 @@ void affichage_abonne()
     else 
     {
         
-        printf("----------------------------------------------------------------------------------------------------------------------------------------------------\n");
-        printf("%-21s %-21s %-51s %-51s %-21s\n", "ID", "NOM", "PRENOM", "EMAIL", "NB EMPRUNTS");
-        printf("----------------------------------------------------------------------------------------------------------------------------------------------------\n");
+        printf("---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+        printf("%-11s %-51s %-51s %-36s %-12s %-19s %-19s\n", "ID", "NOM", "PRENOM", "EMAIL","ABO VALIDE", "EMPRUNTS EN COURS", "EMPRUNTS EN RETARD");
+        printf("---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
 
         for (i = 0; i < nbabo; i++) 
         {
@@ -847,9 +847,9 @@ void affichage_abonne()
             conv_maj_accents(abo.prenom, 0);
             conv_maj_accents(abo.email, 0);
 
-            printf("%-21s %-21s %-51s %-51s %d\n",abo.id_abonne, abo.nom, abo.prenom, abo.email, abo.nb_emprunts  ); 
+            printf("%-11s %-51s %-51s %-36s %-12s %-19d %-19d\n",abo.id_abonne, abo.nom, abo.prenom, abo.email,int_a_reponse_question_fermee(abo.est_abonne), abo.nb_emprunts, abo.nb_doc_en_retard ); 
 
-            printf("----------------------------------------------------------------------------------------------------------------------------------------------------\n");
+            printf("----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
         }
     }
 }
@@ -1032,6 +1032,7 @@ void ModifierDoc()
                gerer_espace_avant_apres(tabdoc[id_indice].cote);
                conv_maj_accents(tabdoc[id_indice].cote,1);
                affichage_1_doc(id_indice);
+               a_sauvegarder=1; 
                break;
 
                case 2 :
@@ -1041,6 +1042,7 @@ void ModifierDoc()
                gerer_espace_avant_apres(tabdoc[id_indice].titre);
                conv_maj_accents(tabdoc[id_indice].titre,1);
                affichage_1_doc(id_indice);
+               a_sauvegarder=1; 
                break; 
 
                case 3 : 
@@ -1050,6 +1052,7 @@ void ModifierDoc()
                gerer_espace_avant_apres(tabdoc[id_indice].auteur);
                conv_maj_accents(tabdoc[id_indice].auteur,1);
                affichage_1_doc(id_indice);
+               a_sauvegarder=1; 
                break; 
 
                case 4 : 
@@ -1059,6 +1062,7 @@ void ModifierDoc()
                gerer_espace_avant_apres(tabdoc[id_indice].categorie);
                conv_maj_accents(tabdoc[id_indice].categorie,1);
                affichage_1_doc(id_indice);
+               a_sauvegarder=1; 
                break;
 
                case 5 : 
@@ -1068,6 +1072,7 @@ void ModifierDoc()
                gerer_espace_avant_apres(tabdoc[id_indice].edition);
                conv_maj_accents(tabdoc[id_indice].edition,1);
                affichage_1_doc(id_indice);
+               a_sauvegarder=1; 
                break;
 
                case 6 : 
@@ -1077,6 +1082,7 @@ void ModifierDoc()
               gerer_espace_avant_apres(tabdoc[id_indice].collection);
               conv_maj_accents(tabdoc[id_indice].collection,1);
               affichage_1_doc(id_indice);
+              a_sauvegarder=1; 
               break;
 
               case 7 : 
@@ -1086,6 +1092,7 @@ void ModifierDoc()
              gerer_espace_avant_apres(tabdoc[id_indice].format);
              conv_maj_accents(tabdoc[id_indice].format,1);
              affichage_1_doc(id_indice);
+             a_sauvegarder=1; 
              break;
 
              case 8 : 
@@ -1129,6 +1136,7 @@ void ModifierDoc()
 
             tabdoc[id_indice].prix = atof(saisie); // Convertit la saisie en float et l'assigne au prix
             affichage_1_doc(id_indice); // Affiche les détails du document mis à jour
+            a_sauvegarder=1; 
             break;
 
             case 9 : 
@@ -1151,6 +1159,7 @@ void ModifierDoc()
 
              }
             affichage_1_doc(id_indice); 
+            a_sauvegarder=1; 
             break;
 
             case 10 : 
@@ -1172,6 +1181,7 @@ void ModifierDoc()
 
             }
              affichage_1_doc(id_indice); 
+             a_sauvegarder=1; 
              break;
 
             case 11 : 
@@ -1193,6 +1203,7 @@ void ModifierDoc()
 
             }
             affichage_1_doc(id_indice); 
+            a_sauvegarder=1; 
             break;
 
             case 0 : printf("Modifications effectuées et enregistrées !\n");
@@ -1216,7 +1227,6 @@ void ModifierDoc()
        printf("Aucun document trouvé avec l'ID %s.\n", id);
     }
   }
-    a_sauvegarder=1; 
 
 }
 
@@ -1327,6 +1337,7 @@ void ModifierAbo()
              gerer_espace_avant_apres(tababo[id_indice].nom);
              conv_maj_accents(tababo[id_indice].nom,1);
              affichage_1_abo(id_indice);
+             a_sauvegarder=1; 
              break; 
             
             case 2 : 
@@ -1336,6 +1347,7 @@ void ModifierAbo()
              gerer_espace_avant_apres(tababo[id_indice].prenom);
              conv_maj_accents(tababo[id_indice].prenom,1);
              affichage_1_abo(id_indice);
+             a_sauvegarder=1; 
              break;
             
             case 3 : 
@@ -1363,6 +1375,7 @@ void ModifierAbo()
             }
           }
             affichage_1_abo(id_indice);
+            a_sauvegarder=1; 
             break;
          
           case 4 : 
@@ -1385,6 +1398,7 @@ void ModifierAbo()
            }
           }
            affichage_1_abo(id_indice);
+           a_sauvegarder=1; 
            break;
 
           case 5 : 
@@ -1399,6 +1413,7 @@ void ModifierAbo()
             fflush(stdin);
           } 
            affichage_1_abo(id_indice);
+           a_sauvegarder=1; 
            break;
                 
           case 6 : 
@@ -1423,6 +1438,7 @@ void ModifierAbo()
            conv_maj_accents(tababo[id_indice].adresse_postale.ville,1);
 
            affichage_1_abo(id_indice);
+           a_sauvegarder=1; 
            break;
 
           case 7 : 
@@ -1452,6 +1468,7 @@ void ModifierAbo()
             }
           }
             affichage_1_abo(id_indice);
+            a_sauvegarder=1; 
             break;
 
           case 8 : 
@@ -1481,6 +1498,7 @@ void ModifierAbo()
             }
           }
             affichage_1_abo(id_indice);
+            a_sauvegarder=1; 
             break;
               
         case 0 : printf("Modifications effectuées et enregistrées !\n");
@@ -1496,7 +1514,6 @@ void ModifierAbo()
   {
    printf("Aucun abonné trouvé avec l'ID %s.\n", id);
   }
-  a_sauvegarder=1; 
 }
 
 
@@ -1590,9 +1607,21 @@ void RechercheAbo()
 
 void RenouvelerAbonnement()
 {
+    struct date date_actuelle;
+    int i=0,indice_id, veut_renouveler;
+    char reponse[TAILLE_STANDARD], id_saisi[TAILLE_ID];
+
+  // Et du coup ensuite il faut récupérer la date actuelle 
+  time_t tp,nbsec;
+      struct tm hjm ;
+            nbsec=time(&tp);
+            hjm=*localtime(&nbsec);
+            date_actuelle.jour=hjm.tm_mday;
+            date_actuelle.mois=hjm.tm_mon+1;
+            date_actuelle.annee=hjm.tm_year+1900;
+            
   
-  int i=0,indice_id, veut_renouveler;
-  char reponse[TAILLE_STANDARD], id_saisi[TAILLE_ID];
+  
 
   if(nbabo == 0)
   {
@@ -1648,9 +1677,10 @@ void RenouvelerAbonnement()
         if(veut_renouveler)
         { 
           printf("L'abonnement de %s %s a été renouvelé avec succès !\n",tababo[indice_id].nom, tababo[indice_id].prenom);
-          tababo[indice_id].date_dernier_souscription = tababo[indice_id].date_actuelle; 
+          tababo[indice_id].date_dernier_souscription = date_actuelle; 
           printf("Nouvelle date de souscription :  %02d/%02d/%02d\n\n", tababo[indice_id].date_dernier_souscription.jour,tababo[indice_id].date_dernier_souscription.mois, tababo[indice_id].date_dernier_souscription.annee);
           tababo[indice_id].est_abonne=1;
+          a_sauvegarder=1; 
         } 
         else
         {
@@ -1972,9 +2002,9 @@ void chargement()
     {
       while ((!feof(f1)) && (i<MAX_ABO))  
       {
-        retour = fscanf(f1, "%s %s %s %d %d/%d/%d %s %s %s %d %s %d/%d/%d %d/%d/%d %d %d %d\n",abo.id_abonne,
+        retour = fscanf(f1, "%s %s %s %d %d/%d/%d %d/%d/%d %s %s %s %d %s %d/%d/%d %d/%d/%d %d %d %d\n",abo.id_abonne,
         abo.nom, abo.prenom, &abo.num_tel,
-        &abo.date_naissance.jour, &abo.date_naissance.mois, &abo.date_naissance.annee,
+        &abo.date_naissance.jour, &abo.date_naissance.mois, &abo.date_naissance.annee, &abo.date_expiration.jour, &abo.date_expiration.mois, &abo.date_expiration.annee,
         abo.email, abo.adresse_postale.intitule_voie, abo.adresse_postale.num_voie,
         &abo.adresse_postale.code_postal, abo.adresse_postale.ville,
         &abo.date_premier_abonnement.jour, &abo.date_premier_abonnement.mois, &abo.date_premier_abonnement.annee,
@@ -2028,7 +2058,7 @@ void chargement()
         }
         else
         {
-        while ((!feof(f1)) && (i<MAX_EMPRUNTS))  
+        while ((!feof(f1))&&(i<MAX_EMPRUNTS_TABLEAU))  
         {
             retour = fscanf(f1, "%s %s %s %d/%d/%d %d/%d/%d %d/%d/%d %d %s %s %s\n", emp.id, emp.emp_id_abo, emp.emp_id_doc, &emp.date_emprunt.jour, &emp.date_emprunt.mois, &emp.date_emprunt.annee, &emp.date_retour_prevue.jour, &emp.date_retour_prevue.mois, &emp.date_retour_prevue.annee, &emp.date_retour_effective.jour, &emp.date_retour_effective.mois, &emp.date_retour_effective.annee, &emp.est_en_retard, emp.nom_abo_emprunteur, emp.prenom_abo_emprunteur, emp.titre_doc_emprunte);
 
@@ -2053,12 +2083,14 @@ void chargement()
 
                   if (nb_seconde_retour_prevu<nb_seconde_now) //Si le document est en retard alors
                   {
+                    usa_trouve=0;
                     emp.est_en_retard=1;
                     while ((!usa_trouve)&&(j<nbabo))
                     {
                       //DEBUG
-                      printf("id abo dans struct emprunt : %s\n", emp.emp_id_abo);
-                      printf("id abo ds struct abo : %s\n",tababo[j].id_abonne);
+                      //printf("id abo dans struct emprunt : %s\n", emp.emp_id_abo);
+                      //printf("id abo ds struct abo : %s\n",tababo[j].id_abonne);
+
                       if (strcmp(emp.emp_id_abo,tababo[j].id_abonne)==0)
                       {
                         tababo[j].nb_doc_en_retard++;
@@ -2154,7 +2186,7 @@ void sauvegarde()
         conv_espace_en_souligne(abo.adresse_postale.intitule_voie);
         conv_espace_en_souligne(abo.adresse_postale.ville);
 
-        fprintf(f1, "%s %s %s %d %d/%d/%d %s %s %s %d %s %d/%d/%d %d/%d/%d %d %d %d\n", abo.id_abonne, abo.nom, abo.prenom, abo.num_tel, abo.date_naissance.jour, abo.date_naissance.mois, abo.date_naissance.annee, abo.email, abo.adresse_postale.intitule_voie, abo.adresse_postale.num_voie, abo.adresse_postale.code_postal, abo.adresse_postale.ville, abo.date_premier_abonnement.jour, abo.date_premier_abonnement.mois, abo.date_premier_abonnement.annee, abo.date_dernier_souscription.jour, abo.date_dernier_souscription.mois, abo.date_dernier_souscription.annee, abo.nb_emprunts, abo.est_abonne, abo.nb_doc_en_retard);
+        fprintf(f1, "%s %s %s %d %d/%d/%d %d/%d/%d %s %s %s %d %s %d/%d/%d %d/%d/%d %d %d %d\n", abo.id_abonne, abo.nom, abo.prenom, abo.num_tel, abo.date_naissance.jour, abo.date_naissance.mois, abo.date_naissance.annee, abo.date_expiration.jour, abo.date_expiration.mois, abo.date_expiration.annee, abo.email, abo.adresse_postale.intitule_voie, abo.adresse_postale.num_voie, abo.adresse_postale.code_postal, abo.adresse_postale.ville, abo.date_premier_abonnement.jour, abo.date_premier_abonnement.mois, abo.date_premier_abonnement.annee, abo.date_dernier_souscription.jour, abo.date_dernier_souscription.mois, abo.date_dernier_souscription.annee, abo.nb_emprunts, abo.est_abonne, abo.nb_doc_en_retard);
       }
       fclose(f1);
     }
@@ -2261,7 +2293,7 @@ void emprunt_doc ()
       {
         printf("Cet usager ne dispose pas d'un abonnement valide.\n");
       }
-      else if (tababo[case_abo].nb_emprunts>=MAX_EMPRUNTS) //on vérifie si l'abonné a déjà emprunté le maximum de livres
+      else if (tababo[case_abo].nb_emprunts>=MAX_EMPRUNTS_PAR_ABO) //on vérifie si l'abonné a déjà emprunté le maximum de livres
       {
         printf("Cet abonné à déjà emprunté le maximum de livres.\n");
       }
@@ -2378,6 +2410,7 @@ void emprunt_doc ()
             tabemp[nbemp]=emp;
             nbemp++;
             nbemp_en_cours++;
+            a_sauvegarder=1; 
 
         }
         else if (id_doc_valide==0)
@@ -2396,11 +2429,11 @@ void emprunt_doc ()
 //                          ---- Emprunt d'un doc ----
 // ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
 
-void historique_emprunt()
+void historique_emprunt_doc()
 { 
 
 
-  int i; 
+  int i, trouve=0;
   char id[TAILLE_ID];
 
   if ((nbdoc==0)&&(nbabo==0))
@@ -2439,8 +2472,7 @@ void historique_emprunt()
         {
             if (strcmp(tabemp[i].emp_id_doc, id) == 0) 
             {
-                
-                printf("\n Emprunt n°%d\n", i + 1);
+                trouve=1;
                 printf("Identifiant emprunt   : %s\n", tabemp[i].id);
                 printf("Identifiant abonné    : %s\n", tabemp[i].emp_id_abo);
                 printf("Date d'emprunt        : %02d/%02d/%02d\n", tabemp[i].date_emprunt.jour, tabemp[i].date_emprunt.mois, tabemp[i].date_emprunt.annee);
@@ -2448,11 +2480,11 @@ void historique_emprunt()
 
                 if (tabemp[i].date_retour_effective.jour != -1 && tabemp[i].date_retour_effective.mois != -1 && tabemp[i].date_retour_effective.annee != -1)
                 {
-                    printf("Retour réel le    : %02d/%02d/%02d\n", tabemp[i].date_retour_effective.jour,tabemp[i].date_retour_effective.mois, tabemp[i].date_retour_effective.annee);
+                    printf("Retour effectué le    : %02d/%02d/%02d\n", tabemp[i].date_retour_effective.jour,tabemp[i].date_retour_effective.mois, tabemp[i].date_retour_effective.annee);
                 }
                 else 
                 { 
-                    printf("  Document en cours d'utilisation.\n");
+                    printf("Document en cours d'emprunt.\n");
                 }
 
                 if (tabemp[i].est_en_retard)
@@ -2466,11 +2498,10 @@ void historique_emprunt()
 
                 printf("------------------------------------------------------------------------------------------------------\n");
             }
-            else
-            {
-              printf("Aucun emprunt trouvé pour le document avec l'ID %s.\n", id);
-            }
-
+        }
+        if (!trouve)
+        {
+            printf("Aucun emprunt trouvé pour le document avec l'ID %s.\n", id);
         }
 
     
@@ -2499,23 +2530,24 @@ void afficher_liste_emprunt()
   }
   else
   {
-    printf("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
-    printf("%-12s %-12s %-51s %-12s %-51s %-18s %-18s %-18s %-8s\n","ID EMPRUNT","ID ABONNE","NOM ABONNE","ID DOCUMENT", "TITRE DOCUMENT", "DATE D'EMPRUNT", "DATE LIMITE RETOUR", "DATE DE RETOUR", "RETARD");
-    printf("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
-    for (i=0 ; i < nbemp ; i++)
+    printf("----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+    printf("%-14s %-14s %-51s %-14s %-51s %-20s %-20s %-10s\n","ID EMPRUNT","ID ABONNE","NOM ABONNE","ID DOCUMENT", "TITRE DOCUMENT", "DATE LIMITE RETOUR", "DATE DE RETOUR", "RETARD");
+    printf("----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+    for (i=nbemp-1 ; i >=0 ; i--)
     {
       emp=tabemp[i]; 
-      
+      conv_maj_accents(emp.nom_abo_emprunteur,0);
+      conv_maj_accents(emp.titre_doc_emprunte,0);
        
       if (emp.date_retour_effective.jour!=-1) //affichage si le doc a été rendu
       {
-        printf("%-12s %-12s %-51s %-12s %-51s %02d/%02d/%-12d %02d/%02d/%-12d %02d/%02d/%-12d %-8s \n",emp.id, emp.emp_id_abo, emp.nom_abo_emprunteur, emp.emp_id_doc, emp.titre_doc_emprunte, emp.date_emprunt.jour, emp.date_emprunt.mois, emp.date_emprunt.annee, emp.date_retour_prevue.jour, emp.date_retour_prevue.mois, emp.date_retour_prevue.annee, emp.date_retour_effective.jour, emp.date_retour_effective.mois, emp.date_retour_effective.annee, int_a_reponse_question_fermee(emp.est_en_retard)); 
+        printf("%-14s %-14s %-51s %-14s %-51s %02d/%02d/%-14d %02d/%02d/%-14d %-10s \n",emp.id, emp.emp_id_abo, emp.nom_abo_emprunteur, emp.emp_id_doc, emp.titre_doc_emprunte, emp.date_retour_prevue.jour, emp.date_retour_prevue.mois, emp.date_retour_prevue.annee, emp.date_retour_effective.jour, emp.date_retour_effective.mois, emp.date_retour_effective.annee, int_a_reponse_question_fermee(emp.est_en_retard)); 
       }
       else //affichage si le doc n'a pas été rendu
       {
-        printf("%-12s %-12s %-51s %-12s %-51s %02d/%02d/%-12d %02d/%02d/%-12d %-18s %-8s \n",emp.id, emp.emp_id_abo, emp.nom_abo_emprunteur, emp.emp_id_doc,emp.titre_doc_emprunte, emp.date_emprunt.jour, emp.date_emprunt.mois, emp.date_emprunt.annee, emp.date_retour_prevue.jour, emp.date_retour_prevue.mois, emp.date_retour_prevue.annee, message_si_pas_encore_retourne, int_a_reponse_question_fermee(emp.est_en_retard)); 
+        printf("%-14s %-14s %-51s %-14s %-51s %02d/%02d/%-14d %-20s %-10s \n",emp.id, emp.emp_id_abo, emp.nom_abo_emprunteur, emp.emp_id_doc,emp.titre_doc_emprunte, emp.date_retour_prevue.jour, emp.date_retour_prevue.mois, emp.date_retour_prevue.annee, message_si_pas_encore_retourne, int_a_reponse_question_fermee(emp.est_en_retard)); 
       }
-      printf("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+      printf("----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
     }
   } 
 }
@@ -2621,6 +2653,7 @@ void retour_emprunt()
                 }
                 nbemp_en_cours--;
                 printf("Le document a bien été retourné le %02d/%02d/%d, merci.\n", tabemp[i].date_retour_effective.jour, tabemp[i].date_retour_effective.mois, tabemp[i].date_retour_effective.annee);
+                a_sauvegarder=1; 
                 if (tababo[j].nb_doc_en_retard!=0)
                 {
                     printf("Attention, %d de vos documents à rendre sont en retard, merci de les rapporter au plus vite.\n", tababo[j].nb_doc_en_retard);
@@ -2674,6 +2707,8 @@ void sorti_du_fond()
             tabdoc[i].date_fin.annee=hjm.tm_year+1900;
 
         printf("Le document %s, %s de %s a bien été sorti du fond.\n",tabdoc[i].id, tabdoc[i].titre, tabdoc[i].auteur);
+
+        a_sauvegarder=1;
       }
 	  }
     else
@@ -2707,6 +2742,7 @@ void afficher_emprunts_dun_usager()
   strcpy(message_si_pas_encore_retourne, "NON RENDU");
   int case_abo, au_moins_un_emp=0;
   int i, j;
+  struct emprunt emp;
 
   if ((nbdoc==0)&&(nbabo==0))
   {
@@ -2749,24 +2785,26 @@ void afficher_emprunts_dun_usager()
       {
         for (j=nbemp-1 ; j>=0 ; j-- )
         {
-          if (strcmp(tabemp[j].emp_id_abo, id_abo_saisi)==0)
+          if (strcmp(emp.emp_id_abo, id_abo_saisi)==0)
           {
+            emp=tabemp[j];
+            conv_maj_accents(emp.titre_doc_emprunte,0);
             au_moins_un_emp++;
             if (au_moins_un_emp==1) // Si il y a au moins 1 emprunt, avant l'affichage de cet emprunt on affiche les titres des colonnes
             {
               printf("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
-              printf("%-12s %-12s %-51s %-18s %-18s %-18s %-8s\n","ID EMPRUNT","ID DOCUMENT", "TITRE DOCUMENT", "DATE D'EMPRUNT", "DATE LIMITE RETOUR", "DATE DE RETOUR", "RETARD");
+              printf("%-12s %-12s %-51s %-21s %-21s %-21s %-8s\n","ID EMPRUNT","ID DOCUMENT", "TITRE DOCUMENT", "DATE D'EMPRUNT", "DATE LIMITE RETOUR", "DATE DE RETOUR", "RETARD");
               printf("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
             } 
-            if (au_moins_un_emp>1)
+            if (au_moins_un_emp>=1)
             {
-              if (tabemp[j].date_retour_effective.jour!=-1) //affichage si le doc a été rendu
+              if (emp.date_retour_effective.jour!=-1) //affichage si le doc a été rendu
               {
-               printf("%-12s %-12s %-51s %02d/%02d/%-12d %02d/%02d/%-12d %02d/%02d/%-12d %-8s \n",tabemp[j].id, tabemp[j].emp_id_doc, tabemp[j].titre_doc_emprunte, tabemp[j].date_emprunt.jour, tabemp[j].date_emprunt.mois, tabemp[j].date_emprunt.annee, tabemp[j].date_retour_prevue.jour, tabemp[j].date_retour_prevue.mois, tabemp[j].date_retour_prevue.annee, tabemp[j].date_retour_effective.jour, tabemp[j].date_retour_effective.mois, tabemp[j].date_retour_effective.annee, int_a_reponse_question_fermee(tabemp[j].est_en_retard)); 
+               printf("%-12s %-12s %-51s %02d/%02d/%-15d %02d/%02d/%-15d %02d/%02d/%-15d %-8s \n",emp.id, emp.emp_id_doc, emp.titre_doc_emprunte, emp.date_emprunt.jour, emp.date_emprunt.mois, emp.date_emprunt.annee, emp.date_retour_prevue.jour, emp.date_retour_prevue.mois, emp.date_retour_prevue.annee, emp.date_retour_effective.jour, emp.date_retour_effective.mois, emp.date_retour_effective.annee, int_a_reponse_question_fermee(emp.est_en_retard)); 
               }
               else //affichage si le doc n'a pas été rendu
               {
-                printf("%-12s %-12s %-51s %02d/%02d/%-12d %02d/%02d/%-12d %-18s %-8s \n",tabemp[j].id, tabemp[j].emp_id_doc,tabemp[j].titre_doc_emprunte, tabemp[j].date_emprunt.jour, tabemp[j].date_emprunt.mois, tabemp[j].date_emprunt.annee, tabemp[j].date_retour_prevue.jour, tabemp[j].date_retour_prevue.mois, tabemp[j].date_retour_prevue.annee, message_si_pas_encore_retourne, int_a_reponse_question_fermee(tabemp[j].est_en_retard)); 
+                printf("%-12s %-12s %-51s %02d/%02d/%-15d %02d/%02d/%-15d %-21s %-8s \n",emp.id, emp.emp_id_doc,emp.titre_doc_emprunte, emp.date_emprunt.jour, emp.date_emprunt.mois, emp.date_emprunt.annee, emp.date_retour_prevue.jour, emp.date_retour_prevue.mois, emp.date_retour_prevue.annee, message_si_pas_encore_retourne, int_a_reponse_question_fermee(emp.est_en_retard)); 
               }
             }
           }
@@ -2790,13 +2828,6 @@ void afficher_emprunts_dun_usager()
 
 }
 
-// ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
-//            ---- procédure d'afichage des emprunts d'un document ----
-// ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
-void afficher_emprunts_dun_doc()
-{
-  wip();
-}
 
 
 // ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
@@ -2842,6 +2873,7 @@ void lire_chaine_espace(char chaine[])
 // ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
 struct abonne abonnement_expire(struct abonne abo)
 {
+    struct date date_actuelle;
 
   // la date d'expiration c'est la date de dernière souscription une année plus tard
   abo.date_expiration.jour = abo.date_dernier_souscription.jour; 
@@ -2853,33 +2885,33 @@ struct abonne abonnement_expire(struct abonne abo)
       struct tm hjm ;
             nbsec=time(&tp);
             hjm=*localtime(&nbsec);
-            abo.date_actuelle.jour=hjm.tm_mday;
-            abo.date_actuelle.mois=hjm.tm_mon+1;
-            abo.date_actuelle.annee=hjm.tm_year+1900;
+            date_actuelle.jour=hjm.tm_mday;
+            date_actuelle.mois=hjm.tm_mon+1;
+            date_actuelle.annee=hjm.tm_year+1900;
 
   //Ensuite on a juste à comparer si la date actuelle est supérieure à la date d'expriration pour pouvoir dire si l'abonnement doit être renouvelé ou non
-  if(abo.date_actuelle.annee > abo.date_expiration.annee)
+  if(date_actuelle.annee > abo.date_expiration.annee)
   {
     //DEBUG
-    //printf("%d > %d\n", abo.date_actuelle.annee, abo.date_expiration.annee);
+    //printf("%d > %d\n", date_actuelle.annee, abo.date_expiration.annee);
 
     abo.est_abonne = 0; 
   }
-  else if (abo.date_actuelle.annee == abo.date_expiration.annee)
+  else if (date_actuelle.annee == abo.date_expiration.annee)
   {
-    if(abo.date_actuelle.mois > abo.date_expiration.mois)
+    if(date_actuelle.mois > abo.date_expiration.mois)
     {
       //DEBUG
-      //printf("%d > %d \n", abo.date_actuelle.mois, abo.date_expiration.mois);
+      //printf("%d > %d \n", date_actuelle.mois, abo.date_expiration.mois);
 
       abo.est_abonne = 0;
     } 
-    else if(abo.date_actuelle.mois == abo.date_expiration.mois)
+    else if(date_actuelle.mois == abo.date_expiration.mois)
     {
-      if(abo.date_actuelle.jour > abo.date_expiration.jour)
+      if(date_actuelle.jour > abo.date_expiration.jour)
       { 
         //DEBUG
-        //printf("%d > %d \n", abo.date_actuelle.jour, abo.date_expiration.jour);
+        //printf("%d > %d \n", date_actuelle.jour, abo.date_expiration.jour);
 
         abo.est_abonne= 0; 
       }  
