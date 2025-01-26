@@ -1247,217 +1247,227 @@ void affichage_1_abo(int indice_abo)
 }
 
 
-// ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
-//            ---- Procédure de modification d'un abonné ----
-// ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
 void ModifierAbo()
 {
     int i=0, id_indice, choix_modif, ok;
     int valide = 0;
     char id[TAILLE_ID], reponse[TAILLE_STANDARD];
     char saisie[50];
-
-    printf("Saisissez l'ID de l'abonné à rechercher : ");
+    
+    
+    if(nbabo==0)
+    {
+      printf("Il n'y a aucun abonné à modifier"); 
+    }
+    else
+    {
+      printf("Saisissez l'ID de l'abonné à rechercher : ");
     fflush(stdin);
     lire_chaine_augmentee(id);
     conv_maj_accents(id, 0);
 
     id_indice = -1; 
 
-    while ((id_indice==-1)&&(i<nbabo))
-    {
-      if (strcmp(tababo[i].id_abonne, id)==0) 
-      {
-        id_indice = i;
-      }
-      else
-      {
-        i++;
-      }
-    }
+     while ((id_indice==-1)&&(i<nbabo))
+     {
+       if (strcmp(tababo[i].id_abonne, id)==0) 
+       {
+         id_indice = i;
+       }
+       else
+       {
+         i++;
+       }
+     }
+     if (id_indice != -1) 
+     { 
 
-    if (id_indice != -1) 
-    {
-        printf("Abonné trouvé\n");
+
+        printf("════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════\n");
+        printf("                                                                               ABONNE TROUVE !\n");
+        printf("════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════\n");
+        printf("\n");
         affichage_1_abo(id_indice);
         
         choix_modif=-1; // On initialise à tout sauf 0 pour rentrer dans la boucle
-        
+
         while (choix_modif!=0)
         {
-          printf("✧------------MODIFICATION------------✧\n");
-          printf("|     Que souhaitez-vous modifier ?  |\n"); 
-          printf("|------------------------------------|\n");
-          printf("| -1- Le nom                         |\n"); 
-          printf("| -2- Le prénom                      |\n"); 
-          printf("| -3- La date de naissance           |\n"); 
-          printf("| -4- L' adresse email               |\n"); 
-          printf("| -5- Le numéro de téléphone         |\n"); 
-          printf("| -6- L'adresse postale              |\n"); 
-          printf("| -7- Date du premier abonnement     |\n"); 
-          printf("|                                    |\n");
-          printf("| -0- Quitter la modification.       |\n"); 
-          printf("✧-------------------------------------✧\n");
+          printf("╔══════════════════════════════ MENU MODIFICATION ═══════════════════════════╗\n");
+          printf("║                          Que souhaitez-vous modifier ?                     ║\n");
+          printf("║ ────────────────────────────────────────────────────────────────────────── ║\n");
+          printf("║  1. Le nom                                                                 ║\n");
+          printf("║  2. Le prénom                                                              ║\n");
+          printf("║  3. La date de naissance                                                   ║\n");
+          printf("║  4. L'adresse email'                                                       ║\n");
+          printf("║  5. Le numéro de téléphone                                                 ║\n");
+          printf("║  6. L'adresse postale                                                      ║\n");
+          printf("║  7. Date du premier abonnement                                             ║\n");
+          printf("║  8. Date du dernier abonnement                                             ║\n");
+          printf("║                                                                            ║\n");
+          printf("║  0. Quitter le menu de modification                                        ║\n");
+          printf("╚════════════════════════════════════════════════════════════════════════════╝\n");
+          printf("\n");
           printf("Votre choix : "); 
-          scanf("%d",&choix_modif);
+          ok = scanf("%d",&choix_modif);
           fflush(stdin);
-          
-          switch(choix_modif)
-          {
-            case 1 : 
-             printf("Nouveau nom :"); 
-             lire_chaine_espace(tababo[id_indice].nom);
-             gerer_espaces_multiples(tababo[id_indice].nom);
-             gerer_espace_avant_apres(tababo[id_indice].nom);
-             conv_maj_accents(tababo[id_indice].nom,1);
-             affichage_1_abo(id_indice);
-             a_sauvegarder=1; 
-             break; 
-            
-            case 2 : 
-             printf("Nouveau prénom :"); 
-             lire_chaine_espace(tababo[id_indice].prenom);
-             gerer_espaces_multiples(tababo[id_indice].prenom);
-             gerer_espace_avant_apres(tababo[id_indice].prenom);
-             conv_maj_accents(tababo[id_indice].prenom,1);
-             affichage_1_abo(id_indice);
-             a_sauvegarder=1; 
-             break;
-            
-            case 3 : 
-             while (!valide) 
-            {
-              tababo[id_indice].date_naissance.jour = -1;
-              tababo[id_indice].date_naissance.mois = -1;
-              tababo[id_indice].date_naissance.annee = -1;
 
-              printf("Nouvelle date de naissance (jj/mm/aaaa) : ");
-             if (scanf("%d/%d/%d", &tababo[id_indice].date_naissance.jour, &tababo[id_indice].date_naissance.mois, &tababo[id_indice].date_naissance.annee) != 3) 
-            {
-              printf("Erreur : Format incorrect. Veuillez saisir une date au format jj/mm/aaaa.\n");
-              fflush(stdin); // Vider le buffer en cas de format incorrect
-            }
-
-            if (date_valide(tababo[id_indice].date_naissance.jour, tababo[id_indice].date_naissance.mois,tababo[id_indice].date_naissance.annee)) 
-            {
-              valide = 1; // La date est valide, on sort de la boucle
-            } 
-            else 
-            {
-             printf("Erreur : Date invalide. Vérifiez que le jour, le mois et l'année sont corrects.\n");
-             fflush(stdin); // Vider le buffer en cas de date invalide
-            }
-          }
-            affichage_1_abo(id_indice);
-            a_sauvegarder=1; 
-            break;
-         
-          case 4 : 
-           while (!valide) 
+           if(!ok)
            {
-             printf("Nouvelle adresse email : ");
-             lire_chaine_augmentee(tababo[id_indice].email);
-             gerer_espaces_multiples(tababo[id_indice].email); 
-             gerer_espace_avant_apres(tababo[id_indice].email); 
-
-            if (Verif_Email(tababo[id_indice].email)) 
-            {
-              printf("Nouvelle adresse email valide\n");
-              valide = 1; 
-            } 
-            else 
-           {
-             printf("Email invalide. Veuillez rééssayer\n");
+             printf("Veuillez saisir un chiffre entre 0 et 8 pour modifier un abonné.\n"); 
              fflush(stdin); 
+             choix_modif=-1; 
            }
-          }
-           affichage_1_abo(id_indice);
-           a_sauvegarder=1; 
-           break;
+           else if (choix_modif < 0 || choix_modif > 8)
+           {
+             printf("Choix erroné. Veuillez chosisir parmi les fonctionnalités proposées (saisir un chiffre entre 0 et 8)\n"); 
+             choix_modif = -1; 
+           }
+           else
+           {
+             switch(choix_modif)
+             {
+               case 1 : 
+              printf("Nouveau nom :"); 
+              lire_chaine_espace(tababo[id_indice].nom);
+              gerer_espaces_multiples(tababo[id_indice].nom);
+              gerer_espace_avant_apres(tababo[id_indice].nom);
+              affichage_1_abo(id_indice);
+              a_sauvegarder=1; 
+              break; 
 
-          case 5 : 
-           printf("Nouveau numéro de téléphone :"); 
-           ok=scanf("%d",&tababo[id_indice].num_tel); 
-           fflush(stdin);
+              case 2 : 
+              printf("Nouveau prénom :"); 
+              lire_chaine_espace(tababo[id_indice].prenom);
+              gerer_espaces_multiples(tababo[id_indice].prenom);
+              gerer_espace_avant_apres(tababo[id_indice].prenom);
+              affichage_1_abo(id_indice);
+              a_sauvegarder=1; 
+              break;
 
-           while (!ok)
-          {
-            printf("Erreur, merci de saisir un numéro valide : ");
-            ok=scanf("%d", &tababo[id_indice].num_tel);
-            fflush(stdin);
-          } 
-           affichage_1_abo(id_indice);
-           a_sauvegarder=1; 
-           break;
-                
-          case 6 : 
-           printf("Nouveau numéro de voie   : ");
-           scanf("%s",tababo[id_indice].adresse_postale.num_voie); 
-           fflush(stdin);
+              case 3 : 
+              while (!valide) 
+              {
+                printf("Nouvelle adresse email : ");
+                lire_chaine_augmentee(tababo[id_indice].email);
+                gerer_espaces_multiples(tababo[id_indice].email); 
+                gerer_espace_avant_apres(tababo[id_indice].email);
+
+                if (Verif_Email(tababo[id_indice].email))
+                {
+                  printf("Nouvelle adresse email valide\n");
+                  valide = 1;
+                }
+
+                if (date_valide(tababo[id_indice].date_naissance.jour, tababo[id_indice].date_naissance.mois,tababo[id_indice].date_naissance.annee)) 
+                {
+                  valide = 1; // La date est valide, on sort de la boucle
+                }
+                else
+                {
+                  printf("Erreur : Date invalide. Vérifiez que le jour, le mois et l'année sont corrects.\n");
+                  fflush(stdin); // Vider le buffer en cas de date invalide
+                }
+
+              }
+               affichage_1_abo(id_indice);
+               a_sauvegarder=1; 
+               break;
+
+               case 5 : 
+               printf("Nouveau numéro de téléphone :"); 
+               ok=scanf("%d",&tababo[id_indice].num_tel); 
+               fflush(stdin);
+               while (!ok)
+               {
+                 printf("Erreur, merci de saisir un numéro valide : ");
+                 ok=scanf("%d", &tababo[id_indice].num_tel);
+                 fflush(stdin);
+               }
+               affichage_1_abo(id_indice);
+               a_sauvegarder=1; 
+               break;
+
+               case 6 : 
+               printf("Nouveau numéro de voie   : ");
+               scanf("%s",tababo[id_indice].adresse_postale.num_voie); 
+               fflush(stdin);
       
-           printf("Nouvel intitulé de voie  : ");
-           lire_chaine_augmentee(tababo[id_indice].adresse_postale.intitule_voie);
-           gerer_espaces_multiples(tababo[id_indice].adresse_postale.intitule_voie);
-           gerer_espace_avant_apres(tababo[id_indice].adresse_postale.intitule_voie);
-           conv_maj_accents(tababo[id_indice].adresse_postale.intitule_voie,1);
+               printf("Nouvel intitulé de voie  : ");
+               lire_chaine_augmentee(tababo[id_indice].adresse_postale.intitule_voie);
+               gerer_espaces_multiples(tababo[id_indice].adresse_postale.intitule_voie);
+               gerer_espace_avant_apres(tababo[id_indice].adresse_postale.intitule_voie);
 
-           printf("Nouveau code postal      : ");
-           scanf("%d",&tababo[id_indice].adresse_postale.code_postal); 
-           fflush(stdin);
+               printf("Nouveau code postal      : ");
+               scanf("%d",&tababo[id_indice].adresse_postale.code_postal); 
+               fflush(stdin);
 
-           printf("Nouvelle ville           :");
-           lire_chaine_augmentee(tababo[id_indice].adresse_postale.ville);
-           gerer_espaces_multiples(tababo[id_indice].adresse_postale.ville);
-           gerer_espace_avant_apres(tababo[id_indice].adresse_postale.ville);
-           conv_maj_accents(tababo[id_indice].adresse_postale.ville,1);
+               printf("Nouvelle ville           :");
+               lire_chaine_augmentee(tababo[id_indice].adresse_postale.ville);
+               gerer_espaces_multiples(tababo[id_indice].adresse_postale.ville);
+               gerer_espace_avant_apres(tababo[id_indice].adresse_postale.ville);
 
-           affichage_1_abo(id_indice);
-           a_sauvegarder=1; 
-           break;
+               affichage_1_abo(id_indice);
+               a_sauvegarder=1; 
+               break;
 
-          case 7 : 
-            valide=0; 
+               case 7 : 
+               valide=0; 
 
-            while (!valide) 
-            {
-              tababo[id_indice].date_premier_abonnement.jour = -1;
-              tababo[id_indice].date_premier_abonnement.mois = -1;
-              tababo[id_indice].date_premier_abonnement.annee = -1;
+               while (!valide)
+               {
+                 tababo[id_indice].date_premier_abonnement.jour = -1;
+                 tababo[id_indice].date_premier_abonnement.mois = -1;
+                 tababo[id_indice].date_premier_abonnement.annee = -1;
 
-              printf("Nouvelle date de premier abonnement (jj/mm/aaaa) : ");
-             if (scanf("%d/%d/%d", &tababo[id_indice].date_premier_abonnement.jour, &tababo[id_indice].date_premier_abonnement.mois, &tababo[id_indice].date_premier_abonnement.annee) != 3) 
-            {
-              printf("Erreur : Format incorrect. Veuillez saisir une date au format jj/mm/aaaa.\n");
-              fflush(stdin); // Vider le buffer en cas de format incorrect
-            }
+                 printf("Nouvelle date de premier abonnement (jj/mm/aaaa) : ");
 
-            if (date_valide(tababo[id_indice].date_premier_abonnement.jour, tababo[id_indice].date_premier_abonnement.mois,tababo[id_indice].date_premier_abonnement.annee)) 
-            {
-              valide = 1; // La date est valide, on sort de la boucle
-            } 
-            else 
-            {
-             printf("Erreur : Date invalide. Vérifiez que le jour, le mois et l'année sont corrects.\n");
-             fflush(stdin); // Vider le buffer en cas de date invalide
-            }
-          }
-            affichage_1_abo(id_indice);
-            a_sauvegarder=1; 
-            break;
-              
-        case 0 : printf("Modifications effectuées et enregistrées !\n");
-         break; 
+                 if (scanf("%d/%d/%d", &tababo[id_indice].date_premier_abonnement.jour, &tababo[id_indice].date_premier_abonnement.mois, &tababo[id_indice].date_premier_abonnement.annee) != 3)
+                 {
+                   printf("Erreur : Format incorrect. Veuillez saisir une date au format jj/mm/aaaa.\n");
+                   fflush(stdin); // Vider le buffer en cas de format incorrect
+                 }
+                 if (date_valide(tababo[id_indice].date_premier_abonnement.jour, tababo[id_indice].date_premier_abonnement.mois,tababo[id_indice].date_premier_abonnement.annee)) 
+                 {
+                   valide = 1; // La date est valide, on sort de la boucle
+                 }
+                 else
+                 {
+                   printf("Erreur : Date invalide. Vérifiez que le jour, le mois et l'année sont corrects.\n");
+                   fflush(stdin); // Vider le buffer en cas de date invalide
+                 }
 
-        default : printf("choix erroné.\n"); 
-         break;
-             
-      }  
+               } 
+               affichage_1_abo(id_indice);
+               a_sauvegarder=1; 
+               break;
+
+               case 0 : printf("Modifications effectuées et enregistrées !\n");
+               break; 
+
+               default : printf("choix erroné.\n"); 
+               break; 
+
+
+
+
+             }
+           }
+
+
+        }
+
+
+     }
+     else
+     {
+       printf("Aucun abonné trouvé avec l'ID %s.\n", id);
+     }
+
+
     }
-  } 
-  else 
-  {
-   printf("Aucun usager trouvé avec l'ID %s.\n", id);
-  }
+    
+
 }
 
 
