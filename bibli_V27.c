@@ -1303,7 +1303,6 @@ void ModifierAbo()
           printf("║  5. Le numéro de téléphone                                                 ║\n");
           printf("║  6. L'adresse postale                                                      ║\n");
           printf("║  7. Date du premier abonnement                                             ║\n");
-          printf("║  8. Date du dernier abonnement                                             ║\n");
           printf("║                                                                            ║\n");
           printf("║  0. Quitter le menu de modification                                        ║\n");
           printf("╚════════════════════════════════════════════════════════════════════════════╝\n");
@@ -1314,11 +1313,11 @@ void ModifierAbo()
 
            if(!ok)
            {
-             printf("Veuillez saisir un chiffre entre 0 et 8 pour modifier un abonné.\n"); 
+             printf("Veuillez saisir un chiffre entre 0 et 7 pour modifier un abonné.\n"); 
              fflush(stdin); 
              choix_modif=-1; 
            }
-           else if (choix_modif < 0 || choix_modif > 8)
+           else if (choix_modif < 0 || choix_modif > 7)
            {
              printf("Choix erroné. Veuillez chosisir parmi les fonctionnalités proposées (saisir un chiffre entre 0 et 8)\n"); 
              choix_modif = -1; 
@@ -1468,90 +1467,6 @@ void ModifierAbo()
     }
     
 
-}
-
-
-// ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
-//          ---- Procédure de recherche d'un abonné ----
-// ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
-
-void RechercheAbo()
-{
-  char id[TAILLE_ID]; 
-  int id_indice=-1, i, nb_retard=0;
-  struct abonne abo; 
-  struct emprunt emp; 
-  
-  if(nbabo==0)
-  {
-    printf("Il n'y a aucun usager à rechercher.\n"); 
-  }
-  else
-  {
-    printf("Saisissez l'ID de l'usager à rechercher :"); 
-    scanf("%s", id); 
-    fflush(stdin); 
-    
-    for (i=0; i<nbabo; i++)
-    {
-      if(strcmp(tababo[i].id_abonne, id)==0)
-      {
-        id_indice=i; 
-      }
-    }
-    
-    if(id_indice!= -1)
-    {
-      printf("usager trouvé !\n"); 
-      
-      for(i=0; i<nbabo;i++)
-      {
-        abo=tababo[id_indice]; 
-        
-                printf("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
-                printf("ID usager                                     : %s\n", abo.id_abonne);
-                printf("Nom                                           : %s\n", abo.nom);
-                printf("Prénom                                        : %s\n", abo.prenom);
-                printf("Adresse mail                                  : %s\n", abo.email);
-                printf("Numéro de téléphone                           : %d\n", abo.num_tel);
-                printf("Nombre d'emprunts en cours                    : %d\n", abo.nb_emprunts);
-                printf("Date du premier abonnement                    : %02d/%02d/%d\n", abo.date_premier_abonnement.jour, abo.date_premier_abonnement.mois, abo.date_premier_abonnement.annee );
-                printf("Date du dernier abonnement                    : %02d/%02d/%d\n", abo.date_dernier_souscription.jour, abo.date_dernier_souscription.mois, abo.date_dernier_souscription.annee);   
-                printf("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n"); 
-      }
-      
-      if(abo.nb_emprunts==0)
-      {
-        printf("Aucun emprunt en cours pour cet usager.\n");
-      }
-      else
-      {
-        for (i=0; i<nbemp; i++)
-        {
-          emp=tabemp[id_indice]; 
-          
-                     printf("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
-                     printf("ID emprunt                                    : %s\n", emp.id);
-                     printf("ID document                                   : %s\n", emp.emp_id_doc);
-                     printf("Date d'emprunt                                : %02d/%02d/%d\n", emp.date_emprunt.jour, emp.date_emprunt.mois, emp.date_emprunt.annee);
-                     printf("Date de retour prévue                         : %02d/%02d/%d\n", emp.date_retour_prevue.jour, emp.date_retour_prevue.mois, emp.date_retour_prevue.annee);
-                     if(emp.est_en_retard)
-                     {
-                      printf("Document en retard ! Relancer l'usager.\n"); 
-                      emp.nb_retard++; 
-           }
-                     printf("Date de retour effective                      : %02d/%02d/%d\n", emp.date_retour_effective.jour, emp.date_retour_effective.mois, emp.date_retour_effective.annee);
-                     printf("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");    
-        }
-        printf("Nombre de documents en retard : %d\n", emp.nb_retard); 
-      }
-    }
-    else
-    {
-      printf("Aucun usager trouvé avec l'ID %s.\n", id);
-    }
-    
-  }
 }
 
 
@@ -2623,36 +2538,44 @@ void retour_emprunt()
 }
 
 // ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
-//            ---- procédure d'afichage des statistiques ----
+//            ---- procédure de sortie du fond ----
 // ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
 void sorti_du_fond()
 { 
   char id_saisi[TAILLE_ID], reponse[TAILLE_STANDARD];
   int indice_arch, valide=0, i=0, rep_valide=0;
 
-  printf("Saisissez l'ID du document à rechercher : ");
-  fflush(stdin);
-  lire_chaine_augmentee(id_saisi);
-  conv_maj_accents(id_saisi, 1);
 
-  indice_arch = -1; 
-  while((!valide)&&(i<nbdoc))
-	{
-		if (strcmp(tabdoc[i].id, id_saisi)==0) 
-		{
-      valide=1;
-      if (tabdoc[i].est_emprunte==1)
-      {
-        printf("Ce document est en cours d'emprunt, il n'est pas possible de changer son statut de présence dans le fond.\n");
-      }
-      else
-      {
-        tabdoc[i].present_dans_le_fond=0;
-        tabdoc[i].eligible_a_lemprunt=0;
-        tabdoc[i].eligible_a_consult=0;
-        tabdoc[i].presence_rayons=0;
+  if(nbdoc==0)
+  {
+    printf("Il n'y a aucun documents à sortir.\n");
+  }
+  else
+  {
+    printf("Saisissez l'ID du document à rechercher : ");
+   fflush(stdin);
+   lire_chaine_augmentee(id_saisi);
+   conv_maj_accents(id_saisi, 1);
+  
 
-        time_t tp,nbsec;
+    indice_arch = -1; 
+    while((!valide)&&(i<nbdoc))
+    {
+      if (strcmp(tabdoc[i].id, id_saisi)==0) 
+      {
+        valide=1;
+        if (tabdoc[i].est_emprunte==1)
+        {
+          printf("Ce document est en cours d'emprunt, il n'est pas possible de changer son statut de présence dans le fond.\n");
+        }
+        else
+        {
+          tabdoc[i].present_dans_le_fond=0;
+          tabdoc[i].eligible_a_lemprunt=0;
+          tabdoc[i].eligible_a_consult=0;
+          tabdoc[i].presence_rayons=0;
+
+          time_t tp,nbsec;
             struct tm hjm ;
             nbsec=time(&tp);
             hjm=*localtime(&nbsec);
@@ -2660,20 +2583,22 @@ void sorti_du_fond()
             tabdoc[i].date_fin.mois=hjm.tm_mon+1;
             tabdoc[i].date_fin.annee=hjm.tm_year+1900;
 
-        printf("Le document %s, %s de %s a bien été sorti du fond.\n",tabdoc[i].id, tabdoc[i].titre, tabdoc[i].auteur);
+          printf("Le document %s, %s de %s a bien été sorti du fond.\n",tabdoc[i].id, tabdoc[i].titre, tabdoc[i].auteur);
 
-        a_sauvegarder=1;
+          a_sauvegarder=1;
+        }
       }
-	  }
     else
     {
       i++;
     }
-  }
-  if (!valide)
-  {
+    }
+   if (!valide)
+   {
     printf("Erreur, aucun document ne correspond à l'id saisi.\n");
+   }
   }
+  
 }
 
 // ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
